@@ -1,0 +1,104 @@
+import requests
+from bs4 import BeautifulSoup
+import time
+from typing import List, Dict
+from datetime import datetime, timedelta
+
+class Scraper:
+
+    def __init__(self):
+        self.time_upper_bound = datetime.now() + timedelta(hours=6)
+
+    def _request_matches(self, url: str) -> requests.Response.text:
+
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
+    
+    def _parse(self, response: requests.Response.text) -> List[Dict]:
+
+        all_matches = []
+
+        soup = BeautifulSoup(response, 'html.parser')
+
+        surface_level_elements = soup.find_all('tbody')
+
+        for tags in surface_level_elements:
+            
+            match_details = {}
+            teams = []
+            tag_count = 0
+
+            score_details = tags.find_all('td', attrs={'class':'versus'})
+            all_teams = tags.find_all('span')
+            match_format = tags.find_all('abbr')
+            tournament_details = tags.find_all('a')
+
+            for tag in score_details:
+                match_details['score'] = tag.text[:-6]
+                
+            for tag in match_format:
+                if 'Bo' in tag.text:
+                    match_details['match_format'] = tag.text
+            
+            for tag in all_teams:
+
+                if 'data-highlightingclass' in tag.attrs.keys():
+                    team = tag['data-highlightingclass']
+                    teams.append(team)
+
+                if 'data-timestamp' in tag.attrs.keys():
+
+                    match_datetime = datetime.strptime(tag.text, '%B %d, %Y - %H:%M %Z')
+                    
+                    match_details['time'] = tag.text
+                    match_details['datetime'] = match_datetime
+                
+                if 'data-stream-twitch' in tag.attrs.keys():
+                    match_details['stream_name'] = tag['data-stream-twitch'] 
+                    
+                match_details['teams'] = teams
+
+            for tag in tournament_details:
+                
+                if 'title' in tag.attrs.keys():
+                    tag_count += 1
+                    if tag_count % 7 == 0:
+                        match_details['Tournament'] = tag['title']
+
+            if match_details in all_matches:
+                continue
+            
+            all_matches.append(match_details)
+
+        return all_matches
+    
+    def _filter_records(self, records: List[Dict]) -> List[Dict]:
+
+        filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
+        return filtered_records
+
+    def _format_records(self, records: List[Dict]) -> List[str]:
+
+        match_list = []
+
+        for match in records:
+
+            if match['score'] != 'vs':
+                match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{match['stream_name']}>"
+            
+            else:
+                match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | {datetime.strftime(match['datetime'] + timedelta(hours=8), '%B %d, %Y - %I:%M %p')} | <https://twitch.tv/{match['stream_name']}>"
+    
+            match_list.append(match_as_string)
+        
+        return match_list
+
+    def scrape_matches(self, url: str) -> List[Dict]:
+
+        response = self._request_matches(url)
+        all_matches = self._parse(response)
+        filtered_matches = self._filter_records(all_matches)
+        current_match_list = self._format_records(filtered_matches)
+
+        return current_match_list
