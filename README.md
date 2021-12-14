@@ -1,8 +1,8 @@
-## Overview
+# Overview
 
 This is a simple script to run a Discord bot based on the scripts in `utils`. Currently, it supports the retrieval of upcoming DOTA 2 matches.
 
-# Setting up
+## Setting up
 
 Start by setting up a virtual environment and installing the requirements.
 
@@ -21,7 +21,7 @@ for your Discord bot. The link should look something like this: `https://discord
 
 Paste the link in your browser, and proceed with the invitation.
 
-# Running the bot
+## Running the bot
 
 With the bot in your server, simply run the script in your terminal:
 
@@ -29,7 +29,7 @@ With the bot in your server, simply run the script in your terminal:
 python3 bot.py
 ```
 
-# Output example
+## Output example
 
 Once the bot is up and running, try it out by sending it a command, `!dota_matches`.
 
@@ -47,6 +47,10 @@ Neptune Gaming vs ALPHA Esports Pro | Moon Studio Snow League | Bo2 | December 1
 KOBOLDS vs Crocodile | Moon Studio Snow League | Bo2 | December 15, 2021 - 06:00 PM | https://twitch.tv/MoonStudio_EN
 Yangon Galacticos vs Summit Gaming | Top Clans 2021 Winter Invitational | Bo3 | December 15, 2021 - 06:00 PM | https://twitch.tv/TopClansEsports
 ```
+
+## Closing
+
+The bot is a work in progress; more scripts may be added in the future to `utils` to accommodate more features.
 
 
 
