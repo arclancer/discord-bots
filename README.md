@@ -14,7 +14,12 @@ pip install -r requirements.txt
 
 First, you will need to create a Discord bot and retrieve its token. You can do so by reading Discord's documentation [here](https://docs.discord.red/en/stable/bot_application_guide.html).
 
-Once you have its token, replace the token in `.env` with your own.
+Once you have its token, make a copy of `.env.example`, paste your bot token in it and rename it to `.env`:
+
+```
+# env variables
+DISCORD_TOKEN = YOUR_TOKEN_HERE
+```
 
 Next, you will need to invite the bot to your server to use it. In your application homepage, navigate to OAuth2, and click on URL Generator to generate an invite link
 for your Discord bot. The link should look something like this: `https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&permissions={PERMISSIONS}&scope=bot`
