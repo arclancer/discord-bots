@@ -55,6 +55,8 @@ class Scraper:
                     match_details['datetime'] = match_datetime
                 
                 if 'data-stream-twitch' in tag.attrs.keys():
+                    if tag['data-stream-twitch'] == 'Beyond_The_Summit':
+                        tag['data-stream-twitch'].replace('_','').lower()
                     match_details['stream_name'] = tag['data-stream-twitch'] 
                     
                 match_details['teams'] = teams
