@@ -57,6 +57,8 @@ class Scraper:
                 if 'data-stream-twitch' in tag.attrs.keys():
                     if tag['data-stream-twitch'] == 'Beyond_The_Summit':
                         tag['data-stream-twitch'].replace('_','').lower()
+                    if tag['data-stream-twitch'] == 'ESL_DOTA_2':
+                        tag['data-stream-twitch'] = 'ESL_DOTA2'
                     match_details['stream_name'] = tag['data-stream-twitch'] 
                     
                 match_details['teams'] = teams
