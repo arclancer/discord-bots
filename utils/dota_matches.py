@@ -7,8 +7,7 @@ from datetime import datetime, timedelta
 class Scraper:
 
     def __init__(self):
-        self.time_upper_bound = datetime.now() + timedelta(hours=4)
-        print(self.time_upper_bound)
+        self.time_upper_bound = datetime.now() + timedelta(hours=16)
 
     def _request_matches(self, url: str) -> requests.Response.text:
 
@@ -64,12 +63,13 @@ class Scraper:
                     match_details['datetime'] = match_datetime
                 
                 if 'data-stream-twitch' in tag.attrs.keys():
+
                     if tag['data-stream-twitch'] == 'Beyond_the_Summit':
                         tag['data-stream-twitch'] = tag['data-stream-twitch'].replace('_','').lower()
-                        print(tag['data-stream-twitch'])
+
                     if tag['data-stream-twitch'] == 'ESL_Dota_2':
                         tag['data-stream-twitch'] = 'ESL_DOTA2'
-                        print(tag['data-stream-twitch'])
+
                     match_details['stream_name'] = tag['data-stream-twitch'] 
                     
                 match_details['teams'] = teams
@@ -92,7 +92,7 @@ class Scraper:
 
         """
         Records are filtered; matches without a scoreline have been played, and so will be ignored.
-        Matches past the upper bound (12 hours in the future) will also be filtered to prevent bloat.
+        Matches past the upper bound (24 hours in the future) will also be filtered to prevent bloat.
         """
 
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
@@ -135,4 +135,3 @@ if __name__ == '__main__':
 
     scraper = Scraper()
     match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
-    

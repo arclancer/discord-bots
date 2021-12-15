@@ -9,21 +9,25 @@ MAIN_PAGE = "https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matche
 
 bot = commands.Bot(command_prefix='!')
 
-@bot.command(name='dota_matches',help='Retrieves upcoming DOTA 2 matches.')
+@bot.command(name='dota_matches',help='Retrieves upcoming DOTA 2 matches within the next 24 hours.')
 
 async def on_message(ctx, text_parameter=None):
 
     match_scraper = Scraper()
     current_matches = match_scraper.scrape_matches(url=MAIN_PAGE)
     
+    message = ""
+
     if text_parameter:
-        filtered_match_list = [match for match in current_matches if text_parameter.lower() in match.lower()]
-        match_list = "\n-----------\n".join(filtered_match_list)
-        
-    else:
-        match_list = "\n-----------\n".join(current_matches)
+        current_matches = [match for match in current_matches if text_parameter.lower() in match.lower()]
+
+    for match in current_matches:
+        match = match + "\n-----------\n"
+        if len(message + match) >= 2000:
+            await ctx.send(message)
+            message = ""
+        message += match
     
-    response = match_list
-    await ctx.send(response)
+    await ctx.send(message)
 
 bot.run(TOKEN)
