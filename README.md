@@ -41,16 +41,13 @@ Once the bot is up and running, try it out by sending it a command, `!dota_match
 The bot should reply with a message similar to this:
 
 ```
-Evil Geniuses vs Wildcard Gaming | DPC NA 2021/22 Tour 1: Division I | Bo3 | Score: 0:0 | ONGOING | https://twitch.tv/ESL_Dota_2
-The Cut vs KBU.US | DPC NA 2021/22 Tour 1: Division II | Bo3 | December 15, 2021 - 07:00 AM | https://twitch.tv/ESL_Dota_2
-InterActive Philippines vs Crocodile | Top Clans 2021 Winter Invitational | Bo3 | December 15, 2021 - 12:00 PM | https://twitch.tv/TopClansEsports
 Lilgun vs Talon Esports | DPC SEA 2021/22 Tour 1: Division II | Bo3 | December 15, 2021 - 01:00 PM | https://twitch.tv/Beyond_the_Summit
-ALPHA Esports Pro vs Yangon Galacticos | Moon Studio Snow League | Bo2 | December 15, 2021 - 02:00 PM | https://twitch.tv/MoonStudio_EN
-LBZS vs Atomic Esports | Top Clans 2021 Winter Invitational | Bo3 | December 15, 2021 - 03:00 PM | https://twitch.tv/TopClansEsports
+-----------
 T1 vs Motivate.Trust Gaming | DPC SEA 2021/22 Tour 1: Division I | Bo3 | December 15, 2021 - 04:00 PM | https://twitch.tv/Beyond_the_Summit
-Neptune Gaming vs ALPHA Esports Pro | Moon Studio Snow League | Bo2 | December 15, 2021 - 04:00 PM | https://twitch.tv/MoonStudio_EN
-KOBOLDS vs Crocodile | Moon Studio Snow League | Bo2 | December 15, 2021 - 06:00 PM | https://twitch.tv/MoonStudio_EN
-Yangon Galacticos vs Summit Gaming | Top Clans 2021 Winter Invitational | Bo3 | December 15, 2021 - 06:00 PM | https://twitch.tv/TopClansEsports
+-----------
+BOOM Esports vs Team SMG | DPC SEA 2021/22 Tour 1: Division I | Bo3 | December 15, 2021 - 07:00 PM | https://twitch.tv/Beyond_the_Summit
+-----------
+Team Liquid vs Tundra Esports | DPC WEU 2021/22 Tour 1: Division I | Bo3 | December 15, 2021 - 10:00 PM | https://twitch.tv/DreamLeague
 ```
 
 ## Closing

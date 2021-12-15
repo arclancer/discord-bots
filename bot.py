@@ -18,10 +18,10 @@ async def on_message(ctx, text_parameter=None):
     
     if text_parameter:
         filtered_match_list = [match for match in current_matches if text_parameter.lower() in match.lower()]
-        match_list = "\n".join(filtered_match_list)
+        match_list = "\n-----------\n".join(filtered_match_list)
         
     else:
-        match_list = "\n".join(current_matches)
+        match_list = "\n-----------\n".join(current_matches)
     
     response = match_list
     await ctx.send(response)
