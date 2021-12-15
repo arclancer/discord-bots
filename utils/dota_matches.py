@@ -7,15 +7,24 @@ from datetime import datetime, timedelta
 class Scraper:
 
     def __init__(self):
-        self.time_upper_bound = datetime.now() + timedelta(hours=6)
+        self.time_upper_bound = datetime.now() + timedelta(hours=4)
+        print(self.time_upper_bound)
 
     def _request_matches(self, url: str) -> requests.Response.text:
+
+        """
+        Returns a HTML response from the URL with the list of matches.
+        """
 
         response = requests.get(url)
         if response.status_code == 200:
             return response.text
     
     def _parse(self, response: requests.Response.text) -> List[Dict]:
+
+        """
+        Parses the HTML response from the GET request.
+        """
 
         all_matches = []
 
@@ -55,10 +64,12 @@ class Scraper:
                     match_details['datetime'] = match_datetime
                 
                 if 'data-stream-twitch' in tag.attrs.keys():
-                    if tag['data-stream-twitch'] == 'Beyond_The_Summit':
-                        tag['data-stream-twitch'].replace('_','').lower()
-                    if tag['data-stream-twitch'] == 'ESL_DOTA_2':
+                    if tag['data-stream-twitch'] == 'Beyond_the_Summit':
+                        tag['data-stream-twitch'] = tag['data-stream-twitch'].replace('_','').lower()
+                        print(tag['data-stream-twitch'])
+                    if tag['data-stream-twitch'] == 'ESL_Dota_2':
                         tag['data-stream-twitch'] = 'ESL_DOTA2'
+                        print(tag['data-stream-twitch'])
                     match_details['stream_name'] = tag['data-stream-twitch'] 
                     
                 match_details['teams'] = teams
@@ -79,10 +90,19 @@ class Scraper:
     
     def _filter_records(self, records: List[Dict]) -> List[Dict]:
 
+        """
+        Records are filtered; matches without a scoreline have been played, and so will be ignored.
+        Matches past the upper bound (12 hours in the future) will also be filtered to prevent bloat.
+        """
+
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
         return filtered_records
 
     def _format_records(self, records: List[Dict]) -> List[str]:
+
+        """
+        Formats the list of matches to be displayed in Discord.
+        """
 
         match_list = []
 
@@ -100,9 +120,19 @@ class Scraper:
 
     def scrape_matches(self, url: str) -> List[Dict]:
 
+        """
+        The main function to call the other private functions.
+        """
+
         response = self._request_matches(url)
         all_matches = self._parse(response)
         filtered_matches = self._filter_records(all_matches)
         current_match_list = self._format_records(filtered_matches)
 
         return current_match_list
+
+if __name__ == '__main__':
+
+    scraper = Scraper()
+    match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
+    
