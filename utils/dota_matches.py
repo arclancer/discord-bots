@@ -42,16 +42,10 @@ class Scraper:
             match_format = tags.find_all('abbr')
             tournament_details = tags.find_all('a')
 
-            for tag in score_details:
-                match_details['score'] = tag.text[:-6]
-                
-            for tag in match_format:
-                if 'Bo' in tag.text:
-                    match_details['match_format'] = tag.text
-            
             for tag in all_teams:
 
                 if 'data-highlightingclass' in tag.attrs.keys():
+
                     team = tag['data-highlightingclass']
                     teams.append(team)
 
@@ -74,6 +68,13 @@ class Scraper:
                     
                 match_details['teams'] = teams
 
+            for tag in score_details:
+                match_details['score'] = tag.text[:-6]
+                
+            for tag in match_format:
+                if 'Bo' in tag.text:
+                    match_details['match_format'] = tag.text
+
             for tag in tournament_details:
                 
                 if 'title' in tag.attrs.keys():
@@ -81,7 +82,7 @@ class Scraper:
                     if tag_count % 7 == 0:
                         match_details['Tournament'] = tag['title']
 
-            if match_details in all_matches:
+            if match_details in all_matches or 'TBD' in match_details['teams']:
                 continue
             
             all_matches.append(match_details)
@@ -103,7 +104,7 @@ class Scraper:
         """
         Formats the list of matches to be displayed in Discord.
         """
-
+        
         match_list = []
 
         for match in records:
@@ -135,3 +136,4 @@ if __name__ == '__main__':
 
     scraper = Scraper()
     match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
+    
