@@ -81,7 +81,7 @@ class ScrapeMatches:
                     tag_count += 1
                     if tag_count % 7 == 0:
                         match_details['Tournament'] = tag['title']
-                        
+
             if len(match_details.keys()) == 7:
 
                 if match_details in all_matches or 'TBD' in match_details['teams']:
@@ -122,7 +122,7 @@ class ScrapeMatches:
         
         return match_list
 
-    def scrape_matches(self, url: str) -> List[Dict]:
+    def scrape_matches(self, url: str) -> List[str]:
 
         """
         The main function to call the other private functions.
@@ -193,11 +193,10 @@ class ScrapeTeams:
 
 if __name__ == '__main__':
 
-    #scraper = ScrapeMatches()
-    #match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
+    scraper = ScrapeMatches()
+    match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
 
     scraper1 = ScrapeTeams()
     message = scraper1.scrape_teams('https://liquipedia.net/dota2/4_Zoomers')
-    print(message)
     
-x = ['2021-11-12', '2021-11-11', '2021-11-17', '2021-11-18', '2021-11-11']
+    
