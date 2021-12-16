@@ -1,10 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import time
-from typing import List, Dict
+from typing import List, Dict, Union
 from datetime import datetime, timedelta
 
-class Scraper:
+class ScrapeMatches:
 
     def __init__(self):
         self.time_upper_bound = datetime.now() + timedelta(hours=16)
@@ -19,7 +19,7 @@ class Scraper:
         if response.status_code == 200:
             return response.text
     
-    def _parse(self, response: requests.Response.text) -> List[Dict]:
+    def _parse_matches(self, response: requests.Response.text) -> List[Dict]:
 
         """
         Parses the HTML response from the GET request.
@@ -81,11 +81,14 @@ class Scraper:
                     tag_count += 1
                     if tag_count % 7 == 0:
                         match_details['Tournament'] = tag['title']
+                        
+            if len(match_details.keys()) == 7:
 
-            if match_details in all_matches or 'TBD' in match_details['teams']:
-                continue
-            
-            all_matches.append(match_details)
+                if match_details in all_matches or 'TBD' in match_details['teams']:
+                    continue
+                    
+                else:
+                    all_matches.append(match_details)
 
         return all_matches
     
@@ -126,14 +129,75 @@ class Scraper:
         """
 
         response = self._request_matches(url)
-        all_matches = self._parse(response)
+        all_matches = self._parse_matches(response)
         filtered_matches = self._filter_records(all_matches)
         current_match_list = self._format_records(filtered_matches)
 
         return current_match_list
 
+class ScrapeTeams:
+
+    def __init__(self):
+        pass
+
+    def _request_teams(self, url: str) -> requests.Response.text:
+
+        """
+        Returns a HTML response from the URL with the list of matches.
+        """
+
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
+    
+    def _parse_teams(self, response: requests.Response.text) -> Union[str, List, List]:
+
+        soup = BeautifulSoup(response,'html.parser')
+
+        team_name = soup.find('span', attrs={'dir':'auto'}).text
+        active_roster = soup.find('div', attrs={'class': 'roster table-responsive'})
+
+        for tag in active_roster:
+            
+            players = tag.find_all('span', attrs={'id':'player'})
+            join_dates = tag.find_all('div', attrs={'class':'Date'})
+
+            roster = [player.text for player in players]
+            roster_join_dates = sorted([join_date.text[:10] for join_date in join_dates], reverse=True)
+
+        latest_join_date = roster_join_dates[0]
+
+        return team_name, roster, latest_join_date
+        
+    def _format_message(self, team_name: str, roster: List, latest_join_date: str):
+
+        team_formation_date = datetime.strptime(latest_join_date, '%Y-%m-%d').strftime('%d %B %Y')
+
+        discord_message = [f'**{team_name}**, as of {team_formation_date}']
+
+        for i in range(0, 5):
+
+            player_details = f"Position {i+1}: {roster[i]}"
+
+            discord_message.append(player_details)
+        
+        return discord_message
+    
+    def scrape_teams(self, url: str) -> List[str]:
+
+        response = self._request_teams(url)
+        team_name, roster, roster_join_dates = self._parse_teams(response)
+        message = self._format_message(team_name, roster, roster_join_dates)
+
+        return message
+
 if __name__ == '__main__':
 
-    scraper = Scraper()
-    match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
+    #scraper = ScrapeMatches()
+    #match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
+
+    scraper1 = ScrapeTeams()
+    message = scraper1.scrape_teams('https://liquipedia.net/dota2/4_Zoomers')
+    print(message)
     
+x = ['2021-11-12', '2021-11-11', '2021-11-17', '2021-11-18', '2021-11-11']
