@@ -40,9 +40,17 @@ async def on_message(ctx, *args):
     team_scraper = ScrapeTeams()
     team_name = "_".join(args[:])
 
-    team_details = team_scraper.scrape_teams(url=MAIN_PAGE+team_name)
-    message = "\n".join(team_details)
+    try:
+
+        team_details = team_scraper.scrape_teams(url=MAIN_PAGE+team_name)
+
+        message = "\n".join(team_details)
+    
+    except TypeError:
+
+        message = f"Looks like a page for {team_name} does not exist yet, or the team name is spelt incorrectly. Please try again."
 
     await ctx.send(message)
+
 
 bot.run(TOKEN)
