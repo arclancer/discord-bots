@@ -164,7 +164,7 @@ class ScrapeTeams:
             join_dates = tag.find_all('div', attrs={'class':'Date'})
 
             roster = [player.text for player in players]
-            roster_join_dates = sorted([join_date.text[:10] for join_date in join_dates if re.search(r"^[\d-]+$", join_date)], reverse=True)
+            roster_join_dates = sorted([join_date.text[:10] for join_date in join_dates if re.match(r"^[\d-]+$", join_date.text[:10])], reverse=True)
 
         latest_join_date = roster_join_dates[0]
 
@@ -198,6 +198,6 @@ if __name__ == '__main__':
     match_list = match_scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
 
     team_scraper = ScrapeTeams()
-    message = team_scraper.scrape_teams('https://liquipedia.net/dota2/4_Zoomers')
+    message = team_scraper.scrape_teams('https://liquipedia.net/dota2/Fnatic')
     
     
