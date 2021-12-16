@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 import time
 from typing import List, Dict, Union
 from datetime import datetime, timedelta
@@ -163,7 +164,7 @@ class ScrapeTeams:
             join_dates = tag.find_all('div', attrs={'class':'Date'})
 
             roster = [player.text for player in players]
-            roster_join_dates = sorted([join_date.text[:10] for join_date in join_dates], reverse=True)
+            roster_join_dates = sorted([join_date.text[:10] for join_date in join_dates if re.search(r"^[\d-]+$", join_date)], reverse=True)
 
         latest_join_date = roster_join_dates[0]
 
