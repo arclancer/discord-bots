@@ -102,7 +102,7 @@ class ScrapeMatches:
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
         return filtered_records
 
-    def _format_records(self, records: List[Dict]) -> List[str]:
+    def _format_match_records(self, records: List[Dict]) -> List[str]:
 
         """
         Formats the list of matches to be displayed in Discord.
@@ -131,7 +131,7 @@ class ScrapeMatches:
         response = self._request_matches(url)
         all_matches = self._parse_matches(response)
         filtered_matches = self._filter_records(all_matches)
-        current_match_list = self._format_records(filtered_matches)
+        current_match_list = self._format_match_records(filtered_matches)
 
         return current_match_list
 
@@ -169,7 +169,7 @@ class ScrapeTeams:
 
         return team_name, roster, latest_join_date
         
-    def _format_message(self, team_name: str, roster: List, latest_join_date: str):
+    def _format_message(self, team_name: str, roster: List, latest_join_date: str) -> List[str]:
 
         team_formation_date = datetime.strptime(latest_join_date, '%Y-%m-%d').strftime('%d %B %Y')
 
@@ -186,17 +186,17 @@ class ScrapeTeams:
     def scrape_teams(self, url: str) -> List[str]:
 
         response = self._request_teams(url)
-        team_name, roster, roster_join_dates = self._parse_teams(response)
-        message = self._format_message(team_name, roster, roster_join_dates)
+        team_name, roster, latest_join_date = self._parse_teams(response)
+        message = self._format_message(team_name, roster, latest_join_date)
 
         return message
 
 if __name__ == '__main__':
 
-    scraper = ScrapeMatches()
-    match_list = scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
+    match_scraper = ScrapeMatches()
+    match_list = match_scraper.scrape_matches('https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches')
 
-    scraper1 = ScrapeTeams()
-    message = scraper1.scrape_teams('https://liquipedia.net/dota2/4_Zoomers')
+    team_scraper = ScrapeTeams()
+    message = team_scraper.scrape_teams('https://liquipedia.net/dota2/4_Zoomers')
     
     
