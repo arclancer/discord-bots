@@ -49,6 +49,10 @@ async def on_message(ctx, *args):
     except TypeError:
 
         message = f"Looks like a page for {team_name} does not exist yet, or the team name is spelt incorrectly. Please try again."
+    
+    except IndexError:
+
+        message = f"{team_name} currently has an incomplete roster, or is inactive. Visit the team profile page here: {MAIN_PAGE+team_name}"
 
     await ctx.send(message)
 
