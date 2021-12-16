@@ -2,11 +2,11 @@ import os
 import re
 from discord.ext import commands
 from dotenv import load_dotenv
-from utils.dota_matches import Scraper
+from utils.dota_script import ScrapeMatches, ScrapeTeams
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-MAIN_PAGE = "https://liquipedia.net/dota2/Liquipedia:Upcoming_and_ongoing_matches"
+MAIN_PAGE = "https://liquipedia.net/dota2/"
 
 bot = commands.Bot(command_prefix='!')
 
@@ -14,8 +14,9 @@ bot = commands.Bot(command_prefix='!')
 
 async def on_message(ctx, *args):
 
-    match_scraper = Scraper()
-    current_matches = match_scraper.scrape_matches(url=MAIN_PAGE)
+    match_page = "Liquipedia:Upcoming_and_ongoing_matches"
+    match_scraper = ScrapeMatches()
+    current_matches = match_scraper.scrape_matches(url=MAIN_PAGE+match_page)
     
     message = ""
 
@@ -30,6 +31,18 @@ async def on_message(ctx, *args):
             message = ""
         message += match
     
+    await ctx.send(message)
+
+@bot.command(name='dota_team', help='Retrieves members of the Dota team name given.')
+
+async def on_message(ctx, *args):
+
+    team_scraper = ScrapeTeams()
+    team_name = "_".join(args[:])
+
+    team_details = team_scraper.scrape_teams(url=MAIN_PAGE+team_name)
+    message = "\n".join(team_details)
+
     await ctx.send(message)
 
 bot.run(TOKEN)
