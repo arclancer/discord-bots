@@ -1,4 +1,5 @@
 import os
+import re
 from discord.ext import commands
 from dotenv import load_dotenv
 from utils.dota_matches import Scraper
@@ -11,15 +12,16 @@ bot = commands.Bot(command_prefix='!')
 
 @bot.command(name='dota_matches',help='Retrieves upcoming DOTA 2 matches within the next 24 hours.')
 
-async def on_message(ctx, text_parameter=None):
+async def on_message(ctx, *args):
 
     match_scraper = Scraper()
     current_matches = match_scraper.scrape_matches(url=MAIN_PAGE)
     
     message = ""
 
-    if text_parameter:
-        current_matches = [match for match in current_matches if text_parameter.lower() in match.lower()]
+    if args:
+        search_term = " ".join(args[:])
+        current_matches = [match for match in current_matches if re.search(rf"\b{search_term.lower()}\b", match.lower())]
 
     for match in current_matches:
         match = match + "\n-----------\n"
