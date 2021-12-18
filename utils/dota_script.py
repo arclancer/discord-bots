@@ -2,8 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import time
+from twitch_api import RequestStreams
 from typing import List, Dict, Union
 from datetime import datetime, timedelta
+
+stream_requester = RequestStreams()
 
 class ScrapeMatches:
 
@@ -56,16 +59,6 @@ class ScrapeMatches:
                     
                     match_details['time'] = tag.text
                     match_details['datetime'] = match_datetime
-                
-                if 'data-stream-twitch' in tag.attrs.keys():
-
-                    if tag['data-stream-twitch'] == 'Beyond_the_Summit':
-                        tag['data-stream-twitch'] = tag['data-stream-twitch'].replace('_','').lower()
-
-                    if tag['data-stream-twitch'] == 'ESL_Dota_2':
-                        tag['data-stream-twitch'] = 'ESL_DOTA2'
-
-                    match_details['stream_name'] = tag['data-stream-twitch'] 
                     
                 match_details['teams'] = teams
 
@@ -83,7 +76,7 @@ class ScrapeMatches:
                     if tag_count % 7 == 0:
                         match_details['Tournament'] = tag['title']
 
-            if len(match_details.keys()) == 7:
+            if len(match_details.keys()) == 6:
 
                 if match_details in all_matches or 'TBD' in match_details['teams']:
                     continue
@@ -102,11 +95,35 @@ class ScrapeMatches:
 
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
         return filtered_records
+    
+    def _match_ongoing_stream(self, team_one: str, team_two: str):
+
+        """
+        Matches the stream title to the teams that are currently playing the match.
+        Ignores the Russian streams and returns the first non-Russian stream.
+        """
+        
+        ongoing_streams = stream_requester.twitch_api_main('Dota 2')
+
+        for stream in ongoing_streams:
+
+            if re.search(rf"(?i)\b{team_one}\b", stream['stream_title']) and re.search(rf"(?i)\b{team_two}\b", stream['stream_title']):
+
+                if not re.search(rf"(?i)\bRU\b", stream['stream_title']):
+
+                    return stream['stream_name']
+                
+                else:
+                    continue
+            
+            else:
+                continue
+
 
     def _format_match_records(self, records: List[Dict]) -> List[str]:
 
         """
-        Formats the list of matches to be displayed in Discord.
+        Formats the list of matches to be displayed in Discord. Streams will be displayed if available.
         """
         
         match_list = []
@@ -114,10 +131,16 @@ class ScrapeMatches:
         for match in records:
 
             if match['score'] != 'vs':
-                match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{match['stream_name']}>"
-            
+
+                stream_name = self._match_ongoing_stream(match['teams'][0], match['teams'][1])
+
+                if stream_name:
+                    match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{stream_name}>"
+                
+                else:
+                    match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING"
             else:
-                match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | {datetime.strftime(match['datetime'] + timedelta(hours=8), '%B %d, %Y - %I:%M %p')} | <https://twitch.tv/{match['stream_name']}>"
+                match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | {datetime.strftime(match['datetime'] + timedelta(hours=8), '%B %d, %Y - %I:%M %p')}"
     
             match_list.append(match_as_string)
         
