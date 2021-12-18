@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import time
-from twitch_api import RequestStreams
+from utils.twitch_api import RequestStreams
 from typing import List, Dict, Union
 from datetime import datetime, timedelta
 
