@@ -7,17 +7,17 @@ This is a simple script to run a Discord bot based on the scripts in `utils`. Cu
 Start by setting up a virtual environment and installing the requirements.
 
 ```
-python3 -m venv virtual_env
-source virtual_env/bin/activate
+python3 -m venv discord_bot
+source discord_bot/bin/activate
 pip install -r requirements.txt
 ```
 
 First, you will need to create a Discord bot and retrieve its token. You can do so by reading Discord's documentation [here](https://docs.discord.red/en/stable/bot_application_guide.html).
 
 Next, to retrieve the streams for ongoing matches, you will need a Twitch account and generate your Client ID & Client Secret. You can do so by following
-Step 1 of Twitch's API documentation [here](https://dev.twitch.tv/docs/api/)
+Step 1 of Twitch's API documentation [here](https://dev.twitch.tv/docs/api/).
 
-Once you have the tokens, make a copy of `.env.example`, paste your tokens in it and rename it to `.env` :
+Once you have the tokens, make a copy of `.env.example`, paste your tokens in it and rename it to `.env`:
 
 ```
 This is an example of what your .env file should look like.

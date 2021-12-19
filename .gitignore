@@ -1,3 +1,6 @@
 # byte-compiled code and env variables
 utils/__pycache__/
 .env
+
+# virtualenv
+discord_bot/
