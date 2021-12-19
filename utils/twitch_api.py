@@ -1,5 +1,6 @@
 import requests
 import os
+import time
 from dotenv import load_dotenv
 from typing import List, Dict
 
@@ -80,7 +81,8 @@ class RequestStreams:
         stream_dict = {}
 
         for stream in all_streams:
-            stream_dict['stream_name'] = stream['user_name']
+            stream_dict['channel_name'] = stream['user_name']
+            stream_dict['stream_language'] = stream['language']
             stream_dict['stream_title'] = stream['title']
             formatted_streams.append(stream_dict)
             stream_dict = {}
@@ -93,7 +95,7 @@ class RequestStreams:
         game_id = self._request_game_id(game_title)
         all_streams = self._request_stream_titles(game_id)
         formatted_streams = self._format_streams(all_streams)
-
+        
         return formatted_streams
 
 
