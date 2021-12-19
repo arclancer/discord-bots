@@ -100,26 +100,27 @@ class ScrapeMatches:
 
         """
         Matches the stream title to the teams that are currently playing the match.
-        Ignores the Russian streams and returns the first non-Russian stream.
+        Returns the English-speaking stream with the most views; if no English-speaking streams are found,
+        the first non-English-speaking stream will be returned instead.
         """
-        
+        english_streams = []
+        other_streams = []
         ongoing_streams = stream_requester.twitch_api_main('Dota 2')
 
         for stream in ongoing_streams:
 
-            if re.search(rf"(?i)\b{team_one}\b", stream['stream_title']) and re.search(rf"(?i)\b{team_two}\b", stream['stream_title']):
-
-                if not re.search(rf"(?i)\bRU\b", stream['stream_title']):
-
-                    return stream['stream_name']
-                
+            if re.search(rf"(?i)\b{team_one}\b", stream['stream_title']) or re.search(rf"(?i)\b{team_two}\b", stream['stream_title']):
+                if stream['stream_language'] == 'en':
+                    english_streams.append(stream)
                 else:
-                    continue
-            
-            else:
-                continue
-
-
+                    other_streams.append(stream)
+        
+        if english_streams:
+            return english_streams[0]
+        
+        elif other_streams:
+            return other_streams[0]
+        
     def _format_match_records(self, records: List[Dict]) -> List[str]:
 
         """
@@ -135,7 +136,7 @@ class ScrapeMatches:
                 stream_name = self._match_ongoing_stream(match['teams'][0], match['teams'][1])
 
                 if stream_name:
-                    match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{stream_name}>"
+                    match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{stream_name['channel_name']}> [{stream_name['stream_language'].upper()}]"
                 
                 else:
                     match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING"
