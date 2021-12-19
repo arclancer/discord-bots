@@ -1,3 +1,3 @@
-# byte-compiled code
+# byte-compiled code and env variables
 utils/__pycache__/
 .env
