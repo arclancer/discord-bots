@@ -23,6 +23,8 @@ async def on_message(ctx, *args):
     if args:
         search_term = " ".join(args[:])
         current_matches = [match for match in current_matches if re.search(rf"\b{search_term.lower()}\b", match.lower())]
+        if not current_matches:
+            message = f"No matches found for '{search_term}'. Try refining your search!"
 
     for match in current_matches:
         match = match + "\n-----------\n"
