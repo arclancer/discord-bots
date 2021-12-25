@@ -12,6 +12,7 @@ class ScrapeMatches:
 
     def __init__(self):
         self.time_upper_bound = datetime.now() + timedelta(hours=16)
+        self.blacklisted_words = ['Gaming', 'Team', 'e-sports', 'Esports', 'esports']
 
     def _request_matches(self, url: str) -> requests.Response.text:
 
@@ -96,20 +97,71 @@ class ScrapeMatches:
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
         return filtered_records
     
-    def _match_ongoing_stream(self, team_one: str, team_two: str):
+    def _get_team_keywords(self, team_one: str, team_two: str) -> Union[List[str], List[str]]:
+
+        """
+        Often, team names include common naming conventions e.g. Nemiga [Gaming], Gambit [Esports], Vici [Gaming]
+        It is very common in matches to use alternative names of competitive teams, such as their initials, or without the naming convention.
+        The goal here is to retrieve alternative keywords of the team name.
+        For example, Nemiga Gaming could yield ['Nemiga Gaming', 'Nemiga', 'NG'].
+        This is to improve the logic in the regex matching for stream names.
+        """
+
+        team_one_keywords = [team_one]
+        team_two_keywords = [team_two]
+        
+        for team in [team_one, team_two]:
+            if re.search(r"[\(].*?[\)]", team):
+                processed_team = re.sub(r"[\(].*?[\)]", "", team).strip()
+                if team == team_one:
+                    team_one_keywords.append(processed_team)
+                    team_one = processed_team
+                else:
+                    team_two_keywords.append(processed_team)
+                    team_two = processed_team
+        
+        for word in self.blacklisted_words:
+            for team in [team_one, team_two]:
+                if word in team:
+                    modified_keyword = team.replace(word, '').strip()
+                    if modified_keyword in team_one:
+                        team_one_keywords.append(modified_keyword)
+                    else:
+                        team_two_keywords.append(modified_keyword)
+        
+        team_one_split = team_one.split()
+        team_two_split = team_two.split()
+
+        for split_team in [team_one_split, team_two_split]:
+            if len(split_team) > 1:
+                abbreviation = ''.join([letter[0] for letter in split_team])
+                if split_team == team_one_split:
+                    team_one_keywords.append(abbreviation)
+                    team_one_keywords.append(abbreviation.upper())
+                else:
+                    team_two_keywords.append(abbreviation)
+                    team_two_keywords.append(abbreviation.upper())
+
+        return team_one_keywords, team_two_keywords            
+
+    def _match_ongoing_stream(self, team_one_keywords: List[str], team_two_keywords: List[str]) -> Dict:
 
         """
         Matches the stream title to the teams that are currently playing the match.
         Returns the English-speaking stream with the most views; if no English-speaking streams are found,
         the first non-English-speaking stream will be returned instead.
         """
+        
         english_streams = []
         other_streams = []
         ongoing_streams = stream_requester.twitch_api_main('Dota 2')
 
+        team_one_keywords = '|'.join(team_one_keywords)
+        team_two_keywords = '|'.join(team_two_keywords)
+
         for stream in ongoing_streams:
 
-            if re.search(rf"(?i)\b{team_one}\b", stream['stream_title']) or re.search(rf"(?i)\b{team_two}\b", stream['stream_title']):
+            if re.search(rf"(?i)\b{team_one_keywords}\b", stream['stream_title']) or re.search(rf"(?i)\b{team_two_keywords}\b", stream['stream_title']):
                 if stream['stream_language'] == 'en':
                     english_streams.append(stream)
                 else:
@@ -133,7 +185,8 @@ class ScrapeMatches:
 
             if match['score'] != 'vs':
 
-                stream_name = self._match_ongoing_stream(match['teams'][0], match['teams'][1])
+                team_one_keywords, team_two_keywords = self._get_team_keywords(match['teams'][0], match['teams'][1])
+                stream_name = self._match_ongoing_stream(team_one_keywords, team_two_keywords)
 
                 if stream_name:
                     match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{stream_name['channel_name']}> [{stream_name['stream_language'].upper()}]"
@@ -168,7 +221,7 @@ class ScrapeTeams:
     def _request_teams(self, url: str) -> requests.Response.text:
 
         """
-        Returns a HTML response from the URL with the list of matches.
+        Returns a HTML response from the URL with the list of teams.
         """
 
         response = requests.get(url)
@@ -176,6 +229,10 @@ class ScrapeTeams:
             return response.text
     
     def _parse_teams(self, response: requests.Response.text) -> Union[str, List, List]:
+
+        """
+        Parses the HTML response and returns the roster details for each team.
+        """
 
         soup = BeautifulSoup(response,'html.parser')
 
@@ -195,6 +252,10 @@ class ScrapeTeams:
         return team_name, roster, latest_join_date
         
     def _format_message(self, team_name: str, roster: List, latest_join_date: str) -> List[str]:
+
+        """
+        Formats the Discord message that the bot will send.
+        """
 
         team_formation_date = datetime.strptime(latest_join_date, '%Y-%m-%d').strftime('%d %B %Y')
 
@@ -223,11 +284,19 @@ class ScrapeTournaments:
 
     def _request_tournaments(self, url: str) -> requests.Response.text:
 
+        """
+        Returns a HTML response from the URL with the list of teams.
+        """
+
         response = requests.get(url)
         if response.status_code == 200:
             return response.text
     
     def _parse_tournaments(self, response: requests.Response.text):
+
+        """
+        Parses the HTML response and returns all ongoing tournaments' details.
+        """
         
         soup = BeautifulSoup(response, 'html.parser')
         all_tournament_lists = soup.find_all('ul', attrs={'class': 'tournaments-list'})
@@ -259,6 +328,10 @@ class ScrapeTournaments:
                 self.all_tournaments.append(tournament_details)
     
     def _format_message(self, tournaments: List[Dict]) -> List[str]:
+
+        """
+        Formats the Discord message to be sent by the bot.
+        """
 
         discord_message = ["**Ongoing Tournaments**"]
 
