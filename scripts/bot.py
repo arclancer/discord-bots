@@ -2,7 +2,7 @@ import os
 import re
 from discord.ext import commands
 from dotenv import load_dotenv
-from utils.dota_script import ScrapeMatches, ScrapeTeams
+from dota_script import ScrapeMatches, ScrapeTeams, ScrapeTournaments
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -23,6 +23,8 @@ async def on_message(ctx, *args):
     if args:
         search_term = " ".join(args[:])
         current_matches = [match for match in current_matches if re.search(rf"\b{search_term.lower()}\b", match.lower())]
+        if not current_matches:
+            message = f"No matches found for '{search_term}'. Try refining your search!"
 
     for match in current_matches:
         match = match + "\n-----------\n"
@@ -56,5 +58,16 @@ async def on_message(ctx, *args):
 
     await ctx.send(message)
 
+@bot.command(name='dota_tournaments', help='Retrieves ongoing Dota 2 tournaments.')
+
+async def on_message(ctx):
+
+    tournament_scraper = ScrapeTournaments()
+
+    tournament_details = tournament_scraper.scrape_tournaments(MAIN_PAGE)
+
+    message = "\n-----------\n".join(tournament_details)
+
+    await ctx.send(message)
 
 bot.run(TOKEN)
