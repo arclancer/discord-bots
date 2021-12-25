@@ -97,7 +97,7 @@ class ScrapeMatches:
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
         return filtered_records
     
-    def _get_team_keywords(self, team_one: str, team_two: str) -> List[str]:
+    def _get_team_keywords(self, team_one: str, team_two: str) -> Union[List[str], List[str]]:
 
         """
         Often, team names include common naming conventions e.g. Nemiga [Gaming], Gambit [Esports], Vici [Gaming]
@@ -221,7 +221,7 @@ class ScrapeTeams:
     def _request_teams(self, url: str) -> requests.Response.text:
 
         """
-        Returns a HTML response from the URL with the list of matches.
+        Returns a HTML response from the URL with the list of teams.
         """
 
         response = requests.get(url)
@@ -229,6 +229,10 @@ class ScrapeTeams:
             return response.text
     
     def _parse_teams(self, response: requests.Response.text) -> Union[str, List, List]:
+
+        """
+        Parses the HTML response and returns the roster details for each team.
+        """
 
         soup = BeautifulSoup(response,'html.parser')
 
@@ -248,6 +252,10 @@ class ScrapeTeams:
         return team_name, roster, latest_join_date
         
     def _format_message(self, team_name: str, roster: List, latest_join_date: str) -> List[str]:
+
+        """
+        Formats the Discord message that the bot will send.
+        """
 
         team_formation_date = datetime.strptime(latest_join_date, '%Y-%m-%d').strftime('%d %B %Y')
 
@@ -276,11 +284,19 @@ class ScrapeTournaments:
 
     def _request_tournaments(self, url: str) -> requests.Response.text:
 
+        """
+        Returns a HTML response from the URL with the list of teams.
+        """
+
         response = requests.get(url)
         if response.status_code == 200:
             return response.text
     
     def _parse_tournaments(self, response: requests.Response.text):
+
+        """
+        Parses the HTML response and returns all ongoing tournaments' details.
+        """
         
         soup = BeautifulSoup(response, 'html.parser')
         all_tournament_lists = soup.find_all('ul', attrs={'class': 'tournaments-list'})
@@ -312,6 +328,10 @@ class ScrapeTournaments:
                 self.all_tournaments.append(tournament_details)
     
     def _format_message(self, tournaments: List[Dict]) -> List[str]:
+
+        """
+        Formats the Discord message to be sent by the bot.
+        """
 
         discord_message = ["**Ongoing Tournaments**"]
 
