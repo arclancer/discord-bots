@@ -2,7 +2,7 @@ import os
 import re
 from discord.ext import commands
 from dotenv import load_dotenv
-from utils.dota_script import ScrapeMatches, ScrapeTeams
+from dota_script import ScrapeMatches, ScrapeTeams, ScrapeTournaments
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -58,5 +58,16 @@ async def on_message(ctx, *args):
 
     await ctx.send(message)
 
+@bot.command(name='dota_tournaments', help='Retrieves ongoing Dota 2 tournaments.')
+
+async def on_message(ctx):
+
+    tournament_scraper = ScrapeTournaments()
+
+    tournament_details = tournament_scraper.scrape_tournaments(MAIN_PAGE)
+
+    message = "\n-----------\n".join(tournament_details)
+
+    await ctx.send(message)
 
 bot.run(TOKEN)
