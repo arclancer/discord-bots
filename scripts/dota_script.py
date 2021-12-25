@@ -216,6 +216,67 @@ class ScrapeTeams:
 
         return message
 
+class ScrapeTournaments:
+
+    def __init__(self):
+        self.all_tournaments = []
+
+    def _request_tournaments(self, url: str) -> requests.Response.text:
+
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
+    
+    def _parse_tournaments(self, response: requests.Response.text):
+        
+        soup = BeautifulSoup(response, 'html.parser')
+        all_tournament_lists = soup.find_all('ul', attrs={'class': 'tournaments-list'})
+
+        for tournaments in all_tournament_lists:
+            
+            tournaments_classified = tournaments.find_all('li')
+
+            for tournament_list in tournaments_classified:
+                tournament_list_tags = tournament_list.find_all('span', attrs={'class': 'tournaments-list-heading'})
+                for tags in tournament_list_tags:
+                    if tags.text == 'Ongoing':
+                        ongoing_tournaments = tournament_list.find_all('ul', attrs={'class':'tournaments-list-type-list'})
+        
+        for tournament in ongoing_tournaments:
+
+            for tags in tournament:
+                
+                tournament_details = {}
+                tournament_page_links = tags.find('a')
+                tournament_names = tags.find('span', attrs={'class':'tournaments-list-name'})
+                tournament_dates = tags.find('small', attrs={'class':'tournaments-list-dates'})
+                tournament_details['link'] = tournament_page_links['href']
+            
+                tournament_details['name'] = tournament_names.text
+            
+                tournament_details['date'] = tournament_dates.text
+
+                self.all_tournaments.append(tournament_details)
+    
+    def _format_message(self, tournaments: List[Dict]) -> List[str]:
+
+        discord_message = ["**Ongoing Tournaments**"]
+
+        for tournament in tournaments:
+
+            details = f"**{tournament['name']}**   |   {tournament['date']}   |   <https://liquipedia.net{tournament['link']}>"
+            discord_message.append(details)
+        
+        return discord_message
+    
+    def scrape_tournaments(self, url: str) -> List[str]:
+
+        response = self._request_tournaments(url)
+        self._parse_tournaments(response)
+        message = self._format_message(self.all_tournaments)
+
+        return message
+
 if __name__ == '__main__':
 
     match_scraper = ScrapeMatches()
@@ -223,5 +284,7 @@ if __name__ == '__main__':
 
     team_scraper = ScrapeTeams()
     message = team_scraper.scrape_teams('https://liquipedia.net/dota2/Fnatic')
-    
+
+    tournament_scraper = ScrapeTournaments()
+    all_tourneys = tournament_scraper.scrape_tournaments('https://liquipedia.net/dota2/Main_Page')
     
