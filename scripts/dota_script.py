@@ -97,7 +97,7 @@ class ScrapeMatches:
         filtered_records = [record for record in records if record['score'] and record['datetime'] < self.time_upper_bound]
         return filtered_records
     
-    def _get_team_keywords(self, team_one: str, team_two: str) -> Union[List[str], List[str]]:
+    def _get_team_keywords(self, team_name: str) -> List[str]:
 
         """
         Often, team names include common naming conventions e.g. Nemiga [Gaming], Gambit [Esports], Vici [Gaming]
@@ -107,44 +107,28 @@ class ScrapeMatches:
         This is to improve the logic in the regex matching for stream names.
         """
 
-        team_one_keywords = [team_one]
-        team_two_keywords = [team_two]
+        team_keywords = [team_name]
         
-        for team in [team_one, team_two]:
-            if re.search(r"[\(].*?[\)]", team):
-                processed_team = re.sub(r"[\(].*?[\)]", "", team).strip()
-                if team == team_one:
-                    team_one_keywords.append(processed_team)
-                    team_one = processed_team
-                else:
-                    team_two_keywords.append(processed_team)
-                    team_two = processed_team
+        if re.search(r"[\(].*?[\)]", team_name):
+            processed_team = re.sub(r"[\(].*?[\)]", "", team_name).strip()
+            team_keywords.append(processed_team)
+            team_name = processed_team
         
         for word in self.blacklisted_words:
-            for team in [team_one, team_two]:
-                if word in team:
-                    modified_keyword = team.replace(word, '').strip()
-                    if modified_keyword in team_one:
-                        team_one_keywords.append(modified_keyword)
-                    else:
-                        team_two_keywords.append(modified_keyword)
+            if word in team_name:
+                modified_keyword = team_name.replace(word, '').strip()
+                team_keywords.append(modified_keyword)
         
-        team_one_split = team_one.split()
-        team_two_split = team_two.split()
+        team_name_split = team_name.split()
 
-        for split_team in [team_one_split, team_two_split]:
-            if len(split_team) > 1:
-                abbreviation = ''.join([letter[0] for letter in split_team])
-                if split_team == team_one_split:
-                    team_one_keywords.append(abbreviation)
-                    team_one_keywords.append(abbreviation.upper())
-                else:
-                    team_two_keywords.append(abbreviation)
-                    team_two_keywords.append(abbreviation.upper())
+        if len(team_name_split) > 1:
+            abbreviation = ''.join([letter[0] for letter in team_name_split])
+            team_keywords.append(abbreviation)
+            team_keywords.append(abbreviation.upper())
 
-        return team_one_keywords, team_two_keywords            
+        return team_keywords      
 
-    def _match_ongoing_stream(self, team_one_keywords: List[str], team_two_keywords: List[str]) -> Dict:
+    def _match_ongoing_stream(self, team_one: str, team_two: str) -> Dict:
 
         """
         Matches the stream title to the teams that are currently playing the match.
@@ -156,8 +140,8 @@ class ScrapeMatches:
         other_streams = []
         ongoing_streams = stream_requester.twitch_api_main('Dota 2')
 
-        team_one_keywords = '|'.join(team_one_keywords)
-        team_two_keywords = '|'.join(team_two_keywords)
+        team_one_keywords = '|'.join(self._get_team_keywords(team_one))
+        team_two_keywords = '|'.join(self._get_team_keywords(team_two))
 
         for stream in ongoing_streams:
 
@@ -185,8 +169,7 @@ class ScrapeMatches:
 
             if match['score'] != 'vs':
 
-                team_one_keywords, team_two_keywords = self._get_team_keywords(match['teams'][0], match['teams'][1])
-                stream_name = self._match_ongoing_stream(team_one_keywords, team_two_keywords)
+                stream_name = self._match_ongoing_stream(match['teams'][0], match['teams'][1])
 
                 if stream_name:
                     match_as_string = f"{match['teams'][0]} vs {match['teams'][1]} | {match['Tournament']} | {match['match_format']} | Score: ||{match['score']}|| | ONGOING | <https://twitch.tv/{stream_name['channel_name']}> [{stream_name['stream_language'].upper()}]"
