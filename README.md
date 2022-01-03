@@ -1,6 +1,6 @@
 # Overview
 
-This is a simple script to run a Discord bot based on the scripts in `utils`. Currently, it supports the retrieval of upcoming DOTA 2 matches within the next 24 hours.
+This is a simple script to run a Discord bot based on the scripts in `scripts`. Currently, it supports the retrieval of upcoming DOTA 2 matches within the next 24 hours, the roster details of active DOTA 2 teams, and details of ongoing DOTA 2 tournaments.
 
 ## Setting up
 
@@ -34,7 +34,7 @@ Paste the link in your browser, and proceed with the invitation.
 
 ## Running the bot
 
-With the bot in your server, simply run the script in your terminal:
+With the bot in your server, ensure your present working directory is the `scripts` directory and simply run the script in your terminal:
 
 ```
 python3 bot.py
@@ -42,7 +42,7 @@ python3 bot.py
 
 ## Output example
 
-Once the bot is up and running, try it out by sending it a command, `!dota_matches`.
+Once the bot is up and running, try it out by sending it a command such `!dota_matches`.
 
 The bot should reply with a message similar to this (truncated; the score will be hidden as a spoiler in the actual Discord message reply):
 
@@ -62,9 +62,19 @@ Cheese Ta3 Djelloul vs 5Comrades | FroggedTV League Season 8 | Bo3 | December 19
 Natus Vincere vs Team Unique | DPC EEU 2021/22 Tour 1: Division I | Bo3 | December 19, 2021 - 10:00 PM
 ```
 
+Currently, the bot supports 3 commands:
+
+```
+!dota_matches <search term>: Returns matches according to the search term. If none specified, returns all matches within the next 24 hours.
+
+!dota_team <team_name>: Returns the roster details according to the team name specified.
+
+!dota_tournaments: Returns the details of currently ongoing tournaments, and links to their page.
+```
+
 ## Closing
 
-The bot is a work in progress; more scripts may be added in the future to `utils` to accommodate more features.
+The bot is a work in progress; more scripts may be added in the future to `scripts` to accommodate more features.
 
 
 
