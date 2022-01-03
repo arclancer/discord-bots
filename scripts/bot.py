@@ -33,6 +33,9 @@ async def on_message(ctx, *args):
             message = ""
         message += match
     
+    if not message:
+        message = f"Looks like there aren't any upcoming matches in the next 24 hours. Check again later!"
+    
     await ctx.send(message)
 
 @bot.command(name='dota_team', help='Retrieves members of the Dota team name given.')
